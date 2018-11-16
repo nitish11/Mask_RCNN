@@ -4,10 +4,10 @@ Added code for multiclasses, inspired from https://engineering.matterport.com/sp
 python -W ignore multiclass.py train --dataset=C:/Mask_RCNN/datasets/multiclass --weights=coco
 
 ## Structure of Dataset folder
--C:/Mask_RCNN/datasets/multiclass/
---train/
----<all_images>
----"via_region_data.json" containing tagged annotations
---val/
----<all_images>
----"via_region_data.json" containing tagged annotations
+-C:/Mask_RCNN/datasets/multiclass/ <br/>
+--train/<br/>
+---<all_images><br/>
+---"via_region_data.json" containing tagged annotations<br/>
+--val/<br/>
+---<all_images><br/>
+---"via_region_data.json" containing tagged annotations<br/>
