@@ -54,26 +54,40 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 #  Configurations
 ############################################################
 
+config_file_path = os.path.join(ROOT_DIR, "config.json")
+
+with open(config_file_path) as config_file:
+    data = json.load(config_file)
+
+ print(data["NAME"])
+ print(data["IMAGES_PER_GPU"])
+ print(data["NUM_CLASSES"])
+ print(data["STEPS_PER_EPOCH"])
+ print(data["DETECTION_MIN_CONFIDENCE"])
+
+#############################################################
+
+
 
 class MulticlassConfig(Config):
     """Configuration for training on the toy  dataset.
     Derives from the base Config class and overrides some values.
     """
     # Give the configuration a recognizable name
-    NAME = "multiclass"
+    NAME = data["NAME"]
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = data["IMAGES_PER_GPU"]
 
     # Number of classes (including background)
-    NUM_CLASSES = 3 + 1  # Background + multiclass
+    NUM_CLASSES = data["NUM_CLASSES"] + 1  # Background + multiclass
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
+    STEPS_PER_EPOCH = data["STEPS_PER_EPOCH"]
 
     # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    DETECTION_MIN_CONFIDENCE = data["DETECTION_MIN_CONFIDENCE"]
 
 
 ############################################################
@@ -88,10 +102,11 @@ class MulticlassDataset(utils.Dataset):
         subset: Subset to load: train or val
         """
         # Add classes. 
-        self.add_class("multiclass", 0, "BG")
-        self.add_class("multiclass", 1, "class1")
-        self.add_class("multiclass", 2, "class2")
-        self.add_class("multiclass", 3, "class3")
+        self.add_class(NAME, 0, "BG")
+        for i in list(data["CLASS_NAMES"].keys()):
+    		print(int(i), data["CLASS_NAMES"][i])
+    		self.add_class(NAME, int(i), data["CLASS_NAMES"][i])
+
 
         # Train or validation dataset?
         assert subset in ["train", "val"]
@@ -146,7 +161,7 @@ class MulticlassDataset(utils.Dataset):
             height, width = image.shape[:2]
 
             self.add_image(
-                "multiclass",
+                NAME,
                 image_id=a['filename'],  # use file name as a unique image id
                 path=image_path,
                 width=width, height=height,
@@ -162,7 +177,7 @@ class MulticlassDataset(utils.Dataset):
         """
         # If not a multiclass dataset image, delegate to parent class.
         image_info = self.image_info[image_id]
-        if image_info["source"] != "multiclass":
+        if image_info["source"] != NAME:
             return super(self.__class__, self).load_mask(image_id)
 
         # Convert polygons to a bitmap mask of shape
@@ -193,7 +208,7 @@ class MulticlassDataset(utils.Dataset):
     def image_reference(self, image_id):
         """Return the path of the image."""
         info = self.image_info[image_id]
-        if info["source"] == "multiclass":
+        if info["source"] == NAME:
             return info["path"]
         else:
             super(self.__class__, self).image_reference(image_id)
